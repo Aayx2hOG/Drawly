@@ -95,20 +95,45 @@ app.post("/room", authMiddleware, async (req: Request, res: Response) => {
 })
 
 app.get("/chats/:roomId", async (req: Request, res: Response) => {
-    const roomId = Number(req.params.roomId);
-    const messages = await prismaClient.chat.findMany({
-        where: {
-            roomId: roomId
-        },
-        orderBy: {
-            id: "desc"
-        },
-        take: 50
-    });
+    try {
+        const roomId = Number(req.params.roomId);
+        const messages = await prismaClient.chat.findMany({
+            where: {
+                roomId: roomId
+            },
+            orderBy: {
+                id: "desc"
+            },
+            take: 50
+        });
 
-    res.json({
-        messages
-    })
+        res.json({
+            messages
+        })
+    } catch (e) {
+        res.json({
+            message: "Internal server error",
+        });
+    }
+})
+
+app.get("/room/:slug", async (req: Request, res: Response) => {
+    try {
+        const slug = req.params.slug;
+        const room = await prismaClient.room.findFirst({
+            where: {
+                slug
+            }
+        });
+
+        res.json({
+            room
+        })
+    } catch (e) {
+        res.json({
+            message: "Internal server error",
+        });
+    }
 })
 
 app.listen(3001);
