@@ -1,45 +1,33 @@
 "use client";
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react";
+import { initDraw } from "@/draw";
 
 export default function Canvas() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [size, setSize] = useState({ width: 0, height: 0 });
 
     useEffect(() => {
-        if (canvasRef.current) {
-            const canvas = canvasRef.current;
-            const ctx = canvas.getContext("2d");
-
-            if (!ctx) {
-                return;
-            }
-
-            let startX = 0;
-            let startY = 0;
-            let clicked = false;
-
-            canvas.addEventListener("mousedown", (e) => {
-                clicked = true;
-                startX = e.clientX;
-                startY = e.clientY;
+        const updateSize = () => {
+            setSize({
+                width: window.innerWidth,
+                height: window.innerHeight,
             });
-            canvas.addEventListener("mouseup", (e) => {
-                clicked = false;
-                console.log(e.clientX)
-                console.log(e.clientY)
-            });
-            canvas.addEventListener("mousemove", (e) => {
-                if (clicked) {
-                    const width = e.clientX - startX;
-                    const height = e.clientY - startY;
-                    ctx.strokeStyle = "white";
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    ctx.strokeRect(startX, startY, width, height);
-                }
-            });
+        };
+
+        updateSize();
+        window.addEventListener("resize", updateSize);
+        return () => window.removeEventListener("resize", updateSize);
+    }, []);
+
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (canvas && size.width && size.height) {
+            canvas.width = size.width;
+            canvas.height = size.height;
+            initDraw(canvas);
         }
-    }, [canvasRef])
-    return <div>
-        <canvas ref={canvasRef} width={500} height={500}></canvas>
-    </div>;
+    }, [size]);
+
+    return <canvas ref={canvasRef} />;
 }
